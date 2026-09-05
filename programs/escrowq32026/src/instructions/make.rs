@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{Escrow, ESCROW_SEED};
+use crate::{error::ErrorCode, Escrow, ESCROW_SEED};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
@@ -55,6 +55,9 @@ impl<'info> Make<'info> {
         bumps: &MakeBumps,
         expiration: i64,
     ) -> Result<()> {
+        let current_timestamp = Clock::get()?.unix_timestamp;
+        require!(expiration > current_timestamp, ErrorCode::InvalidExpiration);
+
         self.escrow.set_inner(Escrow {
             seed,
             maker: self.maker.key(),

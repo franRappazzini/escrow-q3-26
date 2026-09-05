@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{Escrow, ESCROW_SEED};
+use crate::{error::ErrorCode, Escrow, ESCROW_SEED};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
@@ -74,6 +74,13 @@ pub struct Take<'info> {
 }
 impl<'info> Take<'info> {
     pub fn take(&mut self) -> Result<()> {
+        let current_timestamp = Clock::get()?.unix_timestamp;
+        
+        require!(
+            self.escrow.expiration >= current_timestamp,
+            ErrorCode::EscrowExpired
+        );
+
         // transfer mint b from taker to maker
         let transfer_accounts = TransferChecked {
             from: self.taker_ata_b.to_account_info(),
