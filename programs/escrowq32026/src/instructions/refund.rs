@@ -39,10 +39,12 @@ pub struct Refund<'info> {
 impl<'info> Refund<'info> {
     //Refund tokens from vault to maker and close vault
     pub fn refund_and_close_vault(&mut self) -> Result<()> {
-        let signer_seeds: [&[&[u8]]; 1] = [&[
+        let maker_binding = self.maker.key();
+        let seed_binding = self.escrow.seed.to_le_bytes();
+        let signer_seeds: &[&[&[u8]]] = &[&[
             ESCROW_SEED,
-            self.maker.key.as_ref(),
-            &self.escrow.seed.to_le_bytes()[..],
+            maker_binding.as_ref(),
+            seed_binding.as_ref(),
             &[self.escrow.bump],
         ]];
 
@@ -55,7 +57,7 @@ impl<'info> Refund<'info> {
             authority: self.escrow.to_account_info(),
         };
 
-        let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, &signer_seeds);
+        let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
 
         transfer_checked(cpi_context, self.vault.amount, self.mint_a.decimals)?;
 

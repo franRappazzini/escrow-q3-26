@@ -34,6 +34,4 @@ solana-keypair = "3.0.1"
 solana-pubkey = "4.1.0"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = [
-    'cfg(target_os, values("solana"))',
-] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }
